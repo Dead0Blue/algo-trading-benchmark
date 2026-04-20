@@ -1,0 +1,56 @@
+{
+    "AAPL": {
+        "Random_Forest": {
+            "total_return_pct": 16.799167601178453,
+            "buy_hold_return_pct": 45.91262874246193,
+            "sharpe_ratio": 1.7001253304050385,
+            "max_drawdown_pct": -6.127143331457963,
+            "win_rate_pct": 58.139534883720934,
+            "num_trades": 43
+        },
+        "LSTM": {
+            "total_return_pct": 11.696088217270638,
+            "buy_hold_return_pct": 45.91262874246193,
+            "sharpe_ratio": 0.8387851815962651,
+            "max_drawdown_pct": -14.932371879084238,
+            "win_rate_pct": 55.55555555555556,
+            "num_trades": 135
+        }
+    },
+    "MSFT": {
+        "Random_Forest": {
+            "total_return_pct": 13.800595231666236,
+            "buy_hold_return_pct": 58.738665477706235,
+            "sharpe_ratio": 1.3066383171220273,
+            "max_drawdown_pct": -5.636639432564072,
+            "win_rate_pct": 60.0,
+            "num_trades": 40
+        },
+        "LSTM": {
+            "total_return_pct": 33.46196661792471,
+            "buy_hold_return_pct": 58.738665477706235,
+            "sharpe_ratio": 1.926615535858148,
+            "max_drawdown_pct": -5.55584034514669,
+            "win_rate_pct": 56.88073394495413,
+            "num_trades": 109
+        }
+    },
+    "TSLA": {
+        "Random_Forest": {
+            "total_return_pct": 61.982786960767775,
+            "buy_hold_return_pct": 104.90449795915531,
+            "sharpe_ratio": 1.3934665106474307,
+            "max_drawdown_pct": -32.85378465699661,
+            "win_rate_pct": 53.79746835443038,
+            "num_trades": 158
+        },
+        "LSTM": {
+            "total_return_pct": 3.9618327873772508,
+            "buy_hold_return_pct": 104.90449795915531,
+            "sharpe_ratio": 0.2935348841533995,
+            "max_drawdown_pct": -30.77636462596035,
+            "win_rate_pct": 54.6875,
+            "num_trades": 128
+        }
+    }
+}

@@ -1,0 +1,17 @@
+# Python ignores
+python/venv/
+python/__pycache__/
+*.pyc
+
+# Java / Maven ignores
+java/target/
+*.class
+
+# IDE / OS ignores
+.vscode/
+.idea/
+*.iml
+.DS_Store
+*.log
+
+# Note: Keeping the raw data CSVs and result charts so the repo demonstrates the completed output, but usually these are ignored in production.
