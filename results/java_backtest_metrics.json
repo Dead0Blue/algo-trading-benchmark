@@ -1,50 +1,68 @@
 {
   "MSFT" : {
     "LSTM" : {
-      "win_rate_pct" : 54.54545454545454,
-      "num_trades" : 231.0,
-      "total_return_pct" : 52.56594440036773,
+      "sortino_ratio" : 0.09255048477531631,
+      "win_rate_pct" : 42.857142857142854,
+      "num_trades" : 7.0,
+      "total_return_pct" : 2.2630873589690736,
+      "relative_return_pct" : -56.47557811873716,
       "buy_hold_return_pct" : 58.738665477706235,
-      "max_drawdown_pct" : -12.987591143150723
+      "max_drawdown_pct" : -4.09067267192722,
+      "sharpe_ratio" : 0.38396600114936913
     },
     "Random_Forest" : {
-      "win_rate_pct" : 63.888888888888886,
-      "num_trades" : 36.0,
-      "total_return_pct" : 11.113047050752801,
+      "sortino_ratio" : 0.1800496829891601,
+      "win_rate_pct" : 61.76470588235294,
+      "num_trades" : 34.0,
+      "total_return_pct" : 4.456554766828513,
+      "relative_return_pct" : -54.28211071087772,
       "buy_hold_return_pct" : 58.738665477706235,
-      "max_drawdown_pct" : -4.711878521977297
+      "max_drawdown_pct" : -4.711878521977275,
+      "sharpe_ratio" : 0.5177358806818425
     }
   },
   "AAPL" : {
     "LSTM" : {
-      "win_rate_pct" : 54.97835497835498,
-      "num_trades" : 231.0,
-      "total_return_pct" : 33.394112756932515,
+      "sortino_ratio" : 0.0,
+      "win_rate_pct" : 0.0,
+      "num_trades" : 1.0,
+      "total_return_pct" : -2.007792642406969,
+      "relative_return_pct" : -47.92042138486884,
       "buy_hold_return_pct" : 45.91262874246187,
-      "max_drawdown_pct" : -14.93237187908425
+      "max_drawdown_pct" : -2.007792642406969,
+      "sharpe_ratio" : -1.0246950765959577
     },
     "Random_Forest" : {
-      "win_rate_pct" : 57.446808510638306,
-      "num_trades" : 47.0,
-      "total_return_pct" : 14.491015180429635,
+      "sortino_ratio" : 0.6550146576946454,
+      "win_rate_pct" : 55.10204081632652,
+      "num_trades" : 49.0,
+      "total_return_pct" : 11.68031799942646,
+      "relative_return_pct" : -34.23231074303541,
       "buy_hold_return_pct" : 45.91262874246187,
-      "max_drawdown_pct" : -6.127143331457918
+      "max_drawdown_pct" : -6.127143331457918,
+      "sharpe_ratio" : 1.192110438122805
     }
   },
   "TSLA" : {
     "LSTM" : {
-      "win_rate_pct" : 54.112554112554115,
-      "num_trades" : 231.0,
-      "total_return_pct" : 42.315908579007974,
+      "sortino_ratio" : 0.7418363275907973,
+      "win_rate_pct" : 58.139534883720934,
+      "num_trades" : 129.0,
+      "total_return_pct" : 37.16451078768972,
+      "relative_return_pct" : -67.73998717146571,
       "buy_hold_return_pct" : 104.90449795915544,
-      "max_drawdown_pct" : -32.71970986765206
+      "max_drawdown_pct" : -23.47839305952969,
+      "sharpe_ratio" : 1.0878761238687193
     },
     "Random_Forest" : {
-      "win_rate_pct" : 54.77707006369427,
-      "num_trades" : 157.0,
-      "total_return_pct" : 45.140925699294485,
+      "sortino_ratio" : 0.7697459936618434,
+      "win_rate_pct" : 53.84615384615385,
+      "num_trades" : 156.0,
+      "total_return_pct" : 32.256199378019005,
+      "relative_return_pct" : -72.64829858113644,
       "buy_hold_return_pct" : 104.90449795915544,
-      "max_drawdown_pct" : -36.75369534009897
+      "max_drawdown_pct" : -36.753695340098915,
+      "sharpe_ratio" : 0.9220071001138826
     }
   }
 }

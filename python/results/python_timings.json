@@ -1,0 +1,7 @@
+{
+    "data_loading_s": 1.906151533126831,
+    "feature_engineering_s": 0.22516155242919922,
+    "model_training_s": 61.217798709869385,
+    "backtesting_s": 1.683239459991455,
+    "total_s": 65.03235125541687
+}

@@ -18,7 +18,6 @@ def backtest_strategy(df, pred_col, ticker, model_name):
     # Assume we buy at open tomorrow if prediction is 1, and sell at close tomorrow.
     # A simpler assumption: Daily returns are close-to-close. 
     # If pred==1 (today), we hold the asset for tomorrow. Meaning we get the return from today's close to tomorrow's close.
-    # Let's compute daily return
     df['daily_return'] = df['close'].pct_change()
     
     # We shift returns by -1 because if we predict 1 today, we earn tomorrow's return
@@ -44,16 +43,27 @@ def backtest_strategy(df, pred_col, ticker, model_name):
     
     # Annualized Sharpe (assuming 252 trading days)
     # Risk free rate = 0 for simplicity
-    if df_clean['strategy_return'].std() != 0:
-        sharpe = np.sqrt(252) * df_clean['strategy_return'].mean() / df_clean['strategy_return'].std()
+    mean_return = df_clean['strategy_return'].mean()
+    std_return = df_clean['strategy_return'].std()
+    if std_return != 0:
+        sharpe = np.sqrt(252) * mean_return / std_return
     else:
         sharpe = 0.0
         
+    # Sortino Ratio
+    downside_returns = df_clean[df_clean['strategy_return'] < 0]['strategy_return']
+    downside_std = downside_returns.std() if len(downside_returns) > 1 else 0
+    if downside_std != 0:
+        sortino = np.sqrt(252) * mean_return / downside_std
+    else:
+        sortino = 0.0
+        
     max_dd = calculate_drawdown(df_clean['strategy_equity'])
     
+    # Relative performance
+    relative_perf = total_return - bh_total_return
+    
     # Trades and Win Rate
-    # A trade occurs when we are invested (pred=1)
-    # Win rate: % of days where strategy_return > 0 given pred=1
     trades = df_clean[df_clean[pred_col] == 1]
     num_trades = len(trades)
     win_rate = len(trades[trades['strategy_return'] > 0]) / num_trades if num_trades > 0 else 0
@@ -61,15 +71,20 @@ def backtest_strategy(df, pred_col, ticker, model_name):
     metrics = {
         'total_return_pct': total_return * 100,
         'buy_hold_return_pct': bh_total_return * 100,
+        'relative_return_pct': relative_perf * 100,
         'sharpe_ratio': sharpe,
+        'sortino_ratio': sortino,
         'max_drawdown_pct': max_dd * 100,
         'win_rate_pct': win_rate * 100,
         'num_trades': num_trades
     }
     
     print(f"--- Backtest {model_name} on {ticker} ---")
-    print(f"Strategy Return: {metrics['total_return_pct']:.2f}% (B&H: {metrics['buy_hold_return_pct']:.2f}%)")
+    print(f"Strategy Return: {metrics['total_return_pct']:.2f}%")
+    print(f"B&H Return:      {metrics['buy_hold_return_pct']:.2f}%")
+    print(f"vs Baseline:     {metrics['relative_return_pct']:+.2f}%")
     print(f"Sharpe Ratio:    {metrics['sharpe_ratio']:.2f}")
+    print(f"Sortino Ratio:   {metrics['sortino_ratio']:.2f}")
     print(f"Max Drawdown:    {metrics['max_drawdown_pct']:.2f}%")
     print(f"Win Rate:        {metrics['win_rate_pct']:.2f}%")
     print(f"Number of Trades:{metrics['num_trades']}")

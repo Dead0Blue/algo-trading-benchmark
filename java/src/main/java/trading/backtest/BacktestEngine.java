@@ -70,9 +70,42 @@ public class BacktestEngine {
         
         double totalReturn = (strategyEquity[n-1] / INITIAL_CAPITAL) - 1.0;
         double bhReturn = (bhEquity[n-1] / INITIAL_CAPITAL) - 1.0;
+        double relativeReturn = totalReturn - bhReturn;
         double winRate = numTrades > 0 ? (double) winTrades / numTrades : 0.0;
         
-        System.out.printf("Strategy Return: %.2f%% (B&H: %.2f%%)%n", totalReturn * 100, bhReturn * 100);
+        Map<String, Double> metrics = new HashMap<>();
+        
+        // Sharpe & Sortino
+        double[] dailyReturns = new double[n-1];
+        int numDownside = 0;
+        double sumReturns = 0;
+        for(int i=0; i<n-1; i++) {
+            double r = (strategyEquity[i+1] - strategyEquity[i]) / strategyEquity[i];
+            dailyReturns[i] = r;
+            sumReturns += r;
+            if (r < 0) numDownside++;
+        }
+        double meanReturn = sumReturns / (n-1);
+        double sumSq = 0;
+        for(double r : dailyReturns) sumSq += Math.pow(r - meanReturn, 2);
+        double stdReturn = Math.sqrt(sumSq / (n-1));
+        double sharpe = stdReturn != 0 ? Math.sqrt(252) * meanReturn / stdReturn : 0;
+        
+        double sumSqDownside = 0;
+        if (numDownside > 1) {
+            for(double r : dailyReturns) if(r < 0) sumSqDownside += Math.pow(r, 2); // Sortino uses downside dev from 0 or mean
+            double stdDownside = Math.sqrt(sumSqDownside / numDownside);
+            double sortino = stdDownside != 0 ? Math.sqrt(252) * meanReturn / stdDownside : 0;
+            metrics.put("sortino_ratio", sortino);
+        } else {
+            metrics.put("sortino_ratio", 0.0);
+        }
+
+        System.out.printf("Strategy Return: %.2f%%%n", totalReturn * 100);
+        System.out.printf("B&H Return:      %.2f%%%n", bhReturn * 100);
+        System.out.printf("vs Baseline:     %+.2f%%%n", relativeReturn * 100);
+        System.out.printf("Sharpe Ratio:    %.2f%n", sharpe);
+        System.out.printf("Sortino Ratio:   %.2f%n", metrics.get("sortino_ratio"));
         System.out.printf("Max Drawdown:    %.2f%%%n", maxDrawdown * 100);
         System.out.printf("Win Rate:        %.2f%%%n", winRate * 100);
         System.out.println("Number of Trades:" + numTrades);
@@ -80,9 +113,10 @@ public class BacktestEngine {
         
         plotEquity(ticker, modelName, bhEquity, strategyEquity);
         
-        Map<String, Double> metrics = new HashMap<>();
         metrics.put("total_return_pct", totalReturn * 100);
         metrics.put("buy_hold_return_pct", bhReturn * 100);
+        metrics.put("relative_return_pct", relativeReturn * 100);
+        metrics.put("sharpe_ratio", sharpe);
         metrics.put("max_drawdown_pct", maxDrawdown * 100);
         metrics.put("win_rate_pct", winRate * 100);
         metrics.put("num_trades", (double) numTrades);

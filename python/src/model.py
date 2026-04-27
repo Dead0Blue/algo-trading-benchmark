@@ -8,6 +8,7 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout
 from sklearn.preprocessing import StandardScaler
 import os
 import json
+import time
 
 DATA_DIR = '../data'
 RESULTS_DIR = '../results'
@@ -41,11 +42,19 @@ def evaluate_predictions(y_true, y_pred, model_name, ticker):
 def train_evaluate_rf(X_train, X_test, y_train, y_test, ticker):
     # Random Forest
     rf = RandomForestClassifier(n_estimators=100, random_state=42)
+    
+    start_train = time.time()
     rf.fit(X_train, y_train)
+    train_time = time.time() - start_train
+    
+    start_infer = time.time()
     y_pred = rf.predict(X_test)
     y_pred_proba = rf.predict_proba(X_test)[:, 1]
+    infer_time = time.time() - start_infer
     
     metrics = evaluate_predictions(y_test, y_pred, "Random Forest", ticker)
+    metrics['train_time'] = train_time
+    metrics['infer_time'] = infer_time
     
     # Return predictions for backtesting
     return y_pred, y_pred_proba, metrics
@@ -73,9 +82,7 @@ def train_evaluate_lstm(X_train, X_test, y_train, y_test, ticker):
     # We need to trim the test dates in backtesting later by `seq_length`
     
     model = Sequential([
-        LSTM(50, return_sequences=True, input_shape=(X_train_seq.shape[1], X_train_seq.shape[2])),
-        Dropout(0.2),
-        LSTM(50),
+        LSTM(50, input_shape=(X_train_seq.shape[1], X_train_seq.shape[2])),
         Dropout(0.2),
         Dense(1, activation='sigmoid')
     ])
@@ -83,13 +90,19 @@ def train_evaluate_lstm(X_train, X_test, y_train, y_test, ticker):
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     
     # Train
+    start_train = time.time()
     model.fit(X_train_seq, y_train_seq, epochs=20, batch_size=32, validation_split=0.1, verbose=0)
+    train_time = time.time() - start_train
     
     # Predict
+    start_infer = time.time()
     y_pred_proba = model.predict(X_test_seq).flatten()
+    infer_time = time.time() - start_infer
     y_pred = (y_pred_proba > 0.5).astype(int)
     
     metrics = evaluate_predictions(y_test_seq, y_pred, "LSTM", ticker)
+    metrics['train_time'] = train_time
+    metrics['infer_time'] = infer_time
     
     # To return predictions aligned with the test set (pads first `seq_length` with 0s)
     y_pred_padded = np.concatenate([np.zeros(seq_length, dtype=int), y_pred])

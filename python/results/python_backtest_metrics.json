@@ -1,0 +1,68 @@
+{
+    "AAPL": {
+        "Random_Forest": {
+            "total_return_pct": 16.5130404571171,
+            "buy_hold_return_pct": 45.912594829664144,
+            "relative_return_pct": -29.399554372547044,
+            "sharpe_ratio": 1.6742670229344319,
+            "sortino_ratio": 1.6383721119581307,
+            "max_drawdown_pct": -6.127113717575183,
+            "win_rate_pct": 57.14285714285714,
+            "num_trades": 42
+        },
+        "LSTM": {
+            "total_return_pct": 23.050225238779753,
+            "buy_hold_return_pct": 45.912594829664144,
+            "relative_return_pct": -22.86236959088439,
+            "sharpe_ratio": 1.41411921592356,
+            "sortino_ratio": 1.7896543265307585,
+            "max_drawdown_pct": -12.054647231199544,
+            "win_rate_pct": 54.93827160493827,
+            "num_trades": 162
+        }
+    },
+    "MSFT": {
+        "Random_Forest": {
+            "total_return_pct": 13.800570690491853,
+            "buy_hold_return_pct": 58.738660059715485,
+            "relative_return_pct": -44.93808936922363,
+            "sharpe_ratio": 1.3066366355936214,
+            "sortino_ratio": 1.0556889250671306,
+            "max_drawdown_pct": -5.636710293659563,
+            "win_rate_pct": 60.0,
+            "num_trades": 40
+        },
+        "LSTM": {
+            "total_return_pct": 30.95413356803991,
+            "buy_hold_return_pct": 58.738660059715485,
+            "relative_return_pct": -27.784526491675578,
+            "sharpe_ratio": 2.1735889623542017,
+            "sortino_ratio": 2.325210096462057,
+            "max_drawdown_pct": -5.4751480779840715,
+            "win_rate_pct": 57.377049180327866,
+            "num_trades": 61
+        }
+    },
+    "TSLA": {
+        "Random_Forest": {
+            "total_return_pct": 61.982786960767775,
+            "buy_hold_return_pct": 104.90449795915531,
+            "relative_return_pct": -42.92171099838753,
+            "sharpe_ratio": 1.3934665106474307,
+            "sortino_ratio": 1.8802395798642741,
+            "max_drawdown_pct": -32.85378465699661,
+            "win_rate_pct": 53.79746835443038,
+            "num_trades": 158
+        },
+        "LSTM": {
+            "total_return_pct": 39.22606597822038,
+            "buy_hold_return_pct": 104.90449795915531,
+            "relative_return_pct": -65.67843198093493,
+            "sharpe_ratio": 1.0777072470863371,
+            "sortino_ratio": 1.22657964607909,
+            "max_drawdown_pct": -31.4802384892375,
+            "win_rate_pct": 57.23684210526315,
+            "num_trades": 152
+        }
+    }
+}

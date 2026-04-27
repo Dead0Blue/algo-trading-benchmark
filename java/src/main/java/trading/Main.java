@@ -51,9 +51,16 @@ public class Main {
                 
                 // 3. Models
                 start = System.currentTimeMillis();
-                int[] predsRF = modelEngine.trainAndPredictRF(trainData, testData);
-                int[] predsLSTM = modelEngine.trainAndPredictLSTM(trainData, testData);
+                double[][] resultRF = modelEngine.trainAndPredictRF(trainData, testData);
+                double[][] resultLSTM = modelEngine.trainAndPredictLSTM(trainData, testData);
                 tModelsTotal += (System.currentTimeMillis() - start);
+                
+                double[] predsRF_double = resultRF[0];
+                double[] predsLSTM_double = resultLSTM[0];
+                int[] predsRF = new int[predsRF_double.length];
+                int[] predsLSTM = new int[predsLSTM_double.length];
+                for(int i=0; i<predsRF.length; i++) predsRF[i] = (int)predsRF_double[i];
+                for(int i=0; i<predsLSTM.length; i++) predsLSTM[i] = (int)predsLSTM_double[i];
                 
                 // 4. Backtest
                 start = System.currentTimeMillis();

@@ -24,52 +24,70 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 public class TradingModel {
     private RandomForest rf;
 
-    public int[] trainAndPredictRF(Table trainData, Table testData) {
+    public double[][] trainAndPredictRF(Table trainData, Table testData) {
         System.out.println("Training Random Forest...");
 
-        // Tablesaw to 2D double array for Smile
         double[][] xTrain = extractFeatures(trainData);
         int[] yTrain = extractTarget(trainData);
         
-        // Train Random Forest
         Properties props = new Properties();
+        props.setProperty("smile.random.forest.trees", "100");
+        
+        long startTrain = System.nanoTime();
         this.rf = RandomForest.fit(smile.data.formula.Formula.lhs("target"), toSmileDataFrame(trainData, xTrain, yTrain), props);
+        double trainTime = (System.nanoTime() - startTrain) / 1e9;
 
         System.out.println("Predicting with Random Forest...");
         double[][] xTest = extractFeatures(testData);
-        int[] dummyTarget = new int[testData.rowCount()];
-        String[] columns = {"rsi_14", "ema_10", "ema_50", "macd", "macd_signal", "macd_diff", "bb_bbm", "bb_bbh", "bb_bbl", "bb_bbhi", "bb_bbli", "atr", "volume_change_pct"};
-        smile.data.DataFrame testDf = smile.data.DataFrame.of(xTest, columns).merge(smile.data.vector.IntVector.of("target", dummyTarget));
-        int[] yPred = rf.predict(testDf);
         
-        return yPred;
+        long startInfer = System.nanoTime();
+        int[] yPred = rf.predict(toSmileDataFrame(testData, xTest, new int[testData.rowCount()]));
+        double inferTime = (System.nanoTime() - startInfer) / 1e9;
+        
+        // Return results as a double array [yPred, trainTime, inferTime]
+        // Actually, let's return a wrapper or just print and return yPred.
+        // To keep it simple for now, I'll print them here and the caller can capture.
+        System.out.println("RF_TRAIN_TIME: " + trainTime);
+        System.out.println("RF_INFER_TIME: " + inferTime);
+        
+        double[] results = new double[yPred.length];
+        for(int i=0; i<yPred.length; i++) results[i] = yPred[i];
+        return new double[][]{results, {trainTime, inferTime}};
     }
     
-    public int[] trainAndPredictLSTM(Table trainData, Table testData) {
+    public double[][] trainAndPredictLSTM(Table trainData, Table testData) {
         System.out.println("Training LSTM...");
         
         int seqLength = 10;
         int nIn = 13;
-        int nOut = 2; // binary classification 0 or 1. If regression, nOut=1.
+        int nOut = 2;
         
         double[][] xTrainRaw = extractFeatures(trainData);
         int[] yTrainRaw = extractTarget(trainData);
+        double[][] xTestRaw = extractFeatures(testData);
         
-        // Very basic standardization (optional, but recommended for LSTM, we skip for brevity here since we just want it structured for now)
-        // Let's create sequence data NDArrays.
-        // For DL4J, sequence features shape: [minibatch, numFeatures, sequenceLength]
-        int numTrainExamples = xTrainRaw.length - seqLength;
+        // Standardization
+        StandardScaler scaler = new StandardScaler();
+        scaler.fit(xTrainRaw);
+        double[][] xTrainScaled = scaler.transform(xTrainRaw);
+        double[][] xTestScaled = scaler.transform(xTestRaw);
+        
+        int numTrainExamples = xTrainScaled.length - seqLength;
         INDArray trainFeatures = Nd4j.create(numTrainExamples, nIn, seqLength);
         INDArray trainLabels = Nd4j.create(numTrainExamples, nOut, seqLength);
+        INDArray trainMask = Nd4j.zeros(numTrainExamples, seqLength);
         
         for (int i=0; i<numTrainExamples; i++) {
             for (int t=0; t<seqLength; t++) {
                 for (int j=0; j<nIn; j++) {
-                    trainFeatures.putScalar(new int[]{i, j, t}, xTrainRaw[i+t][j]);
+                    trainFeatures.putScalar(new int[]{i, j, t}, xTrainScaled[i+t][j]);
                 }
-                trainLabels.putScalar(new int[]{i, 0, t}, yTrainRaw[i+t] == 0 ? 1.0 : 0.0);
-                trainLabels.putScalar(new int[]{i, 1, t}, yTrainRaw[i+t] == 1 ? 1.0 : 0.0);
             }
+            // Many-to-one: only provide label at the last time step and mask others
+            int lastStep = seqLength - 1;
+            trainLabels.putScalar(new int[]{i, 0, lastStep}, yTrainRaw[i+seqLength] == 0 ? 1.0 : 0.0);
+            trainLabels.putScalar(new int[]{i, 1, lastStep}, yTrainRaw[i+seqLength] == 1 ? 1.0 : 0.0);
+            trainMask.putScalar(new int[]{i, lastStep}, 1.0);
         }
         
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -84,35 +102,66 @@ public class TradingModel {
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
         net.init();
         
-        net.fit(trainFeatures, trainLabels);
+        long startTrain = System.nanoTime();
+        net.fit(new DataSet(trainFeatures, trainLabels, null, trainMask));
+        double trainTime = (System.nanoTime() - startTrain) / 1e9;
         
         System.out.println("Predicting with LSTM...");
-        double[][] xTestRaw = extractFeatures(testData);
-        int numTestExamples = xTestRaw.length - seqLength;
+        int numTestExamples = xTestScaled.length - seqLength;
         INDArray testFeatures = Nd4j.create(numTestExamples, nIn, seqLength);
         
         for (int i=0; i<numTestExamples; i++) {
             for (int t=0; t<seqLength; t++) {
                 for (int j=0; j<nIn; j++) {
-                    testFeatures.putScalar(new int[]{i, j, t}, xTestRaw[i+t][j]);
+                    testFeatures.putScalar(new int[]{i, j, t}, xTestScaled[i+t][j]);
                 }
             }
         }
         
+        long startInfer = System.nanoTime();
         INDArray output = net.output(testFeatures);
+        double inferTime = (System.nanoTime() - startInfer) / 1e9;
         
-        int[] yPred = new int[testData.rowCount()];
-        for(int i=0; i<seqLength; i++) {
-            yPred[i] = 0; // Pad for sequence length
-        }
+        System.out.println("LSTM_TRAIN_TIME: " + trainTime);
+        System.out.println("LSTM_INFER_TIME: " + inferTime);
+        
+        double[] yPred = new double[testData.rowCount()];
         for(int i=0; i<numTestExamples; i++) {
-            // Get prediction from last time step
-            double p0 = output.getDouble(i, 0, seqLength - 1);
             double p1 = output.getDouble(i, 1, seqLength - 1);
-            yPred[i + seqLength] = p1 > p0 ? 1 : 0;
+            yPred[i + seqLength] = p1 > 0.5 ? 1.0 : 0.0;
         }
         
-        return yPred;
+        return new double[][]{yPred, {trainTime, inferTime}};
+    }
+
+    private static class StandardScaler {
+        private double[] mean;
+        private double[] std;
+
+        public void fit(double[][] data) {
+            int n = data.length;
+            int cols = data[0].length;
+            mean = new double[cols];
+            std = new double[cols];
+            for (double[] row : data) {
+                for (int j = 0; j < cols; j++) mean[j] += row[j];
+            }
+            for (int j = 0; j < cols; j++) mean[j] /= n;
+            for (double[] row : data) {
+                for (int j = 0; j < cols; j++) std[j] += Math.pow(row[j] - mean[j], 2);
+            }
+            for (int j = 0; j < cols; j++) std[j] = Math.sqrt(std[j] / n);
+        }
+
+        public double[][] transform(double[][] data) {
+            double[][] scaled = new double[data.length][data[0].length];
+            for (int i = 0; i < data.length; i++) {
+                for (int j = 0; j < data[0].length; j++) {
+                    scaled[i][j] = (std[j] == 0) ? 0 : (data[i][j] - mean[j]) / std[j];
+                }
+            }
+            return scaled;
+        }
     }
     
     private DataFrame toSmileDataFrame(Table t, double[][] x, int[] y) {
